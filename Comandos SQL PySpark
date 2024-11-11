@@ -1,0 +1,516 @@
+# Exemplo de criação de um DataFrame com PySpark:
+from pyspark.sql import SparkSession
+
+# Cria uma Spark session
+spark = SparkSession.builder.appName("FabricExample").getOrCreate()
+
+# Carrega dados de um arquivo CSV
+df = spark.read.csv("/path/to/file.csv", header=True, inferSchema=True)
+
+# Exibe as primeiras linhas do DataFrame
+df.show()
+
+##################################################################################################################################
+# 01 - Seleção de Colunas
+##################################################################################################################################
+# SQL
+SELECT coluna1, coluna2 FROM tabela;
+
+# PySpark
+df.select("coluna1", "coluna2").show()
+
+##################################################################################################################################
+# 02 - Seleção de Colunas
+##################################################################################################################################
+# SQL
+SELECT * FROM tabela WHERE coluna1 = 'valor';
+
+# PySpark
+df.filter(df.coluna1 == 'valor').show()
+
+##################################################################################################################################
+# 03 - Ordenação de Dados
+##################################################################################################################################
+# SQL
+SELECT * FROM tabela ORDER BY coluna1 DESC;
+
+# PySpark
+df.orderBy(df.coluna1.desc()).show()
+
+##################################################################################################################################
+# 04 - Agrupamento e Agregação
+##################################################################################################################################
+# SQL
+SELECT coluna1, COUNT(*) FROM tabela GROUP BY coluna1;
+
+# PySpark
+df.groupBy("coluna1").count().show()
+
+##################################################################################################################################
+# 05 - Junções de Tabelas
+##################################################################################################################################
+# SQL
+SELECT * FROM tabela1 INNER JOIN tabela2 ON tabela1.coluna = tabela2.coluna;
+
+# PySpark
+df1.join(df2, df1.coluna == df2.coluna, "inner").show()
+
+##################################################################################################################################
+# 06 - Limitação de Linhas
+##################################################################################################################################
+# SQL
+SELECT * FROM tabela LIMIT 10;
+
+# PySpark
+df.limit(10).show()
+
+##################################################################################################################################
+# 07 - Criação de Novas Colunas
+##################################################################################################################################
+# SQL
+SELECT coluna1, coluna2, (coluna1 + coluna2) AS nova_coluna FROM tabela;
+
+# PySpark
+df.withColumn("nova_coluna", df.coluna1 + df.coluna2).show()
+
+##################################################################################################################################
+# 08 - Remoção de Duplicatas
+##################################################################################################################################
+# SQL
+SELECT DISTINCT coluna1 FROM tabela;
+
+# PySpark
+df.select("coluna1").distinct().show()
+
+##################################################################################################################################
+# 09 - Subconsultas e Consultas Complexas
+##################################################################################################################################
+# SQL
+SELECT * FROM (SELECT * FROM tabela WHERE coluna1 = 'valor') AS subconsulta;
+
+# PySpark
+subconsulta = df.filter(df.coluna1 == 'valor')
+subconsulta.show()
+
+##################################################################################################################################
+# 10 - Salvando Dados em Formatos Diferentes
+##################################################################################################################################
+# SQL
+COPY (SELECT * FROM tabela) TO '/path/to/file.csv' CSV HEADER;
+
+# PySpark
+df.write.csv("/path/to/file.csv", header=True)
+
+##################################################################################################################################
+# 11 - Remoção de Colunas
+##################################################################################################################################
+# SQL
+SELECT coluna1, coluna2 FROM tabela;
+# PySpark
+df.drop("coluna3").show()
+
+##################################################################################################################################
+# 12 - Renomear Colunas
+##################################################################################################################################
+# SQL
+SELECT coluna1 AS nova_coluna1 FROM tabela;
+
+PySpark
+df.withColumnRenamed("coluna1", "nova_coluna1").show()
+
+##################################################################################################################################
+# 13 - Soma de Colunas
+##################################################################################################################################
+# SQL
+SELECT SUM(coluna1) FROM tabela;
+
+# PySpark
+df.agg({"coluna1": "sum"}).show()
+
+##################################################################################################################################
+# 14 - Contagem de Linhas
+##################################################################################################################################
+# SQL
+SELECT COUNT(*) FROM tabela;
+
+# PySpark
+df.count()
+
+##################################################################################################################################
+# 15 - Contagem de Linhas
+##################################################################################################################################
+# SQL
+SELECT AVG(coluna1) FROM tabela;
+
+# PySpark
+df.agg({"coluna1": "avg"}).show()
+
+##################################################################################################################################
+# 16 - Mínimo e Máximo de uma Coluna
+##################################################################################################################################
+# SQL
+SELECT MIN(coluna1), MAX(coluna1) FROM tabela;
+
+# PySpark
+df.agg({"coluna1": "min", "coluna1": "max"}).show()
+
+##################################################################################################################################
+# 17 - Mínimo e Máximo de uma Coluna
+##################################################################################################################################
+# SQL
+CREATE FUNCTION minha_funcao(...) RETURNS ...
+
+# PySpark
+from pyspark.sql.functions import udf
+from pyspark.sql.types import IntegerType
+
+def minha_funcao(valor):
+    return valor * 2
+
+udf_minha_funcao = udf(minha_funcao, IntegerType())
+df.withColumn("nova_coluna", udf_minha_funcao(df.coluna1)).show()
+
+##################################################################################################################################
+# 18 - Alterar Tipo de Coluna
+##################################################################################################################################
+# SQL
+ALTER TABLE tabela MODIFY coluna1 INT;
+
+# PySpark
+df.withColumn("coluna1", df["coluna1"].cast("int")).show()
+
+##################################################################################################################################
+# 19 - Concatenar Colunas
+##################################################################################################################################
+# SQL
+SELECT CONCAT(coluna1, coluna2) AS nova_coluna FROM tabela;
+
+# PySpark
+from pyspark.sql.functions import concat, lit
+df.withColumn("nova_coluna", concat(df.coluna1, lit(" "), df.coluna2)).show()
+
+##################################################################################################################################
+# 20 - Filtragem com Condições Múltiplas
+##################################################################################################################################
+# SQL
+SELECT * FROM tabela WHERE coluna1 = 'valor' AND coluna2 > 10;
+
+# PySpark
+df.filter((df.coluna1 == 'valor') & (df.coluna2 > 10)).show()
+
+##################################################################################################################################
+# 21 - Filtragem com Condições Múltiplas
+##################################################################################################################################
+# SQL
+SELECT * FROM tabela WHERE coluna1 = 'valor1' OR coluna1 = 'valor2';
+
+# PySpark
+df.filter((df.coluna1 == 'valor1') | (df.coluna1 == 'valor2')).show()
+
+##################################################################################################################################
+# 22 - Criar Coluna com Condicional (IF ELSE)
+##################################################################################################################################
+# SQL
+SELECT coluna1, 
+       CASE 
+           WHEN coluna1 > 10 THEN 'Alto' 
+           ELSE 'Baixo' 
+       END AS categoria
+FROM tabela;
+
+# PySpark
+from pyspark.sql.functions import when
+df.withColumn("categoria", when(df.coluna1 > 10, "Alto").otherwise("Baixo")).show()
+
+##################################################################################################################################
+# 23 - Agrupamento e Soma
+##################################################################################################################################
+# SQL
+SELECT coluna1, SUM(coluna2) FROM tabela GROUP BY coluna1;
+
+# PySpark
+df.groupBy("coluna1").agg({"coluna2": "sum"}).show()
+
+##################################################################################################################################
+# 24 - Contagem de Valores Únicos
+##################################################################################################################################
+# SQL
+SELECT coluna1, COUNT(DISTINCT coluna2) FROM tabela GROUP BY coluna1;
+
+# PySpark
+df.groupBy("coluna1").agg({"coluna2": "countDistinct"}).show()
+
+##################################################################################################################################
+# 25 - Cruzamento de Dados (CROSS JOIN)
+##################################################################################################################################
+# SQL
+SELECT * FROM tabela1 CROSS JOIN tabela2;
+
+# PySpark
+df1.crossJoin(df2).show()
+
+##################################################################################################################################
+# 26 - Cruzamento de Dados (CROSS JOIN)
+##################################################################################################################################
+# SQL
+SELECT coluna1, 'valor_constante' AS nova_coluna FROM tabela;
+
+# PySpark
+from pyspark.sql.functions import lit
+df.withColumn("nova_coluna", lit("valor_constante")).show()
+
+##################################################################################################################################
+# 27 - Contar Valores Nulos
+##################################################################################################################################
+# SQL
+SELECT COUNT(*) FROM tabela WHERE coluna1 IS NULL;
+
+# PySpark
+df.filter(df.coluna1.isNull()).count()
+
+##################################################################################################################################
+# 28 - Remover Valores Nulos
+##################################################################################################################################
+# SQL
+DELETE FROM tabela WHERE coluna1 IS NULL;
+
+# PySpark
+df.na.drop(subset=["coluna1"]).show()
+
+##################################################################################################################################
+# 29 - Preencher Valores Nulos
+##################################################################################################################################
+# SQL
+UPDATE tabela SET coluna1 = 'valor' WHERE coluna1 IS NULL;
+
+# PySpark
+df.na.fill("valor", subset=["coluna1"]).show()
+
+##################################################################################################################################
+# 30 - Filtragem com LIKE
+##################################################################################################################################
+# SQL
+SELECT * FROM tabela WHERE coluna1 LIKE '%valor%';
+
+# PySpark
+df.filter(df.coluna1.like("%valor%")).show()
+
+##################################################################################################################################
+# 31 - Substring de uma Coluna
+##################################################################################################################################
+# SQL
+SELECT SUBSTRING(coluna1, 1, 5) FROM tabela;
+
+# PySpark
+from pyspark.sql.functions import substring
+df.withColumn("nova_coluna", substring(df.coluna1, 1, 5)).show()
+
+##################################################################################################################################
+# 32 - Conversão de Data
+##################################################################################################################################
+# SQL
+SELECT TO_DATE(coluna_data, 'YYYY-MM-DD') FROM tabela;
+
+# PySpark
+from pyspark.sql.functions import to_date
+df.withColumn("data_formatada", to_date(df.coluna_data, "yyyy-MM-dd")).show()
+
+##################################################################################################################################
+# 33 - Data e Hora Atuais
+##################################################################################################################################
+# SQL
+SELECT CURRENT_TIMESTAMP;
+
+# PySpark
+from pyspark.sql.functions import current_timestamp
+df.withColumn("data_hora_atual", current_timestamp()).show()
+
+##################################################################################################################################
+# 34 - Extração de Mês ou Ano de uma Data
+##################################################################################################################################
+# SQL
+SELECT EXTRACT(MONTH FROM coluna_data) FROM tabela;
+
+# PySpark
+from pyspark.sql.functions import month, year
+df.withColumn("mes", month(df.coluna_data)).withColumn("ano", year(df.coluna_data)).show()
+
+##################################################################################################################################
+# 35 - Filtrar por Datas
+##################################################################################################################################
+# SQL
+SELECT * FROM tabela WHERE coluna_data > '2023-01-01';
+
+# PySpark
+df.filter(df.coluna_data > '2023-01-01').show()
+
+##################################################################################################################################
+# 36 - Criar uma Tabela Temporária
+##################################################################################################################################
+# SQL
+CREATE TEMP TABLE tabela_temp AS SELECT * FROM tabela;
+
+# PySpark
+df.createOrReplaceTempView("tabela_temp")
+
+##################################################################################################################################
+# 37 - Executar SQL no PySpark
+##################################################################################################################################
+# SQL
+SELECT * FROM tabela;
+
+# PySpark
+spark.sql("SELECT * FROM tabela_temp").show()
+
+##################################################################################################################################
+# 38 - Remoção de Espaços em Branco
+##################################################################################################################################
+# SQL
+SELECT TRIM(coluna1) FROM tabela;
+
+# PySpark
+from pyspark.sql.functions import trim
+df.withColumn("coluna1_trim", trim(df.coluna1)).show()
+
+##################################################################################################################################
+# 39 - Agrupamento com Função HAVING
+##################################################################################################################################
+# SQL
+SELECT coluna1, COUNT(*) FROM tabela GROUP BY coluna1 HAVING COUNT(*) > 10;
+
+# PySpark
+df.groupBy("coluna1").count().filter("count > 10").show()
+
+##################################################################################################################################
+# 40 - Operação com Janela (Window Function)
+##################################################################################################################################
+# SQL
+SELECT coluna1, RANK() OVER (PARTITION BY coluna2 ORDER BY coluna3 DESC) AS rank_col FROM tabela;
+
+# PySpark
+from pyspark.sql.window import Window
+from pyspark.sql.functions import rank
+
+windowSpec = Window.partitionBy("coluna2").orderBy(df.coluna3.desc())
+df.withColumn("rank_col", rank().over(windowSpec)).show()
+
+##################################################################################################################################
+# 41 - Remover Duplicatas com Base em Colunas Específicas
+##################################################################################################################################
+#SQL
+SELECT DISTINCT ON (coluna1) * FROM tabela;
+
+# PySpark
+df.dropDuplicates(["coluna1"]).show()
+
+##################################################################################################################################
+# 42 - Concatenar DataFrames (UNION)
+##################################################################################################################################
+#SQL
+SELECT * FROM tabela1 UNION SELECT * FROM tabela2;
+
+# PySpark
+df1.union(df2).show()
+
+##################################################################################################################################
+# 43 - Exibição de Esquema de DataFrame
+##################################################################################################################################
+#SQL
+DESCRIBE tabela;
+
+# PySpark
+df.printSchema()
+
+##################################################################################################################################
+# 44 - Mesclagem de Tabelas (MERGE)
+##################################################################################################################################
+#SQL
+USING tabela_fonte AS src
+ON dest.id = src.id
+WHEN MATCHED THEN 
+    UPDATE SET dest.coluna1 = src.coluna1
+WHEN NOT MATCHED THEN 
+    INSERT (id, coluna1) VALUES (src.id, src.coluna1);
+
+# PySpark
+python
+Copiar código
+from delta.tables import DeltaTable
+
+deltaTable = DeltaTable.forPath(spark, "/caminho/para/tabela_destino")
+deltaTable.alias("dest").merge(
+    df_fonte.alias("src"),
+    "dest.id = src.id"
+).whenMatchedUpdate(set={"coluna1": "src.coluna1"}) \
+ .whenNotMatchedInsert(values={"id": "src.id", "coluna1": "src.coluna1"}) \
+ .execute()
+
+##################################################################################################################################
+# 45 - Calcular Percentual de uma Coluna
+##################################################################################################################################
+#SQL
+SELECT (coluna1 / total) * 100 AS percentual FROM tabela;
+
+# PySpark
+total = df.agg({"coluna1": "sum"}).collect()[0][0]
+df.withColumn("percentual", (df.coluna1 / total) * 100).show()
+
+##################################################################################################################################
+# 46 - Aplicar Função de Janela Cumulativa
+##################################################################################################################################
+#SQL
+SELECT coluna1, SUM(coluna2) OVER (ORDER BY coluna1) AS soma_acumulada FROM tabela;
+
+# PySpark
+from pyspark.sql.window import Window
+from pyspark.sql.functions import sum
+
+windowSpec = Window.orderBy("coluna1")
+df.withColumn("soma_acumulada", sum("coluna2").over(windowSpec)).show()
+
+##################################################################################################################################
+# 47 - Substituir Valores em uma Coluna
+##################################################################################################################################
+#SQL
+UPDATE tabela SET coluna1 = 'novo_valor' WHERE coluna1 = 'valor_antigo';
+
+# PySpark
+df.withColumn("coluna1", regexp_replace(df.coluna1, "valor_antigo", "novo_valor")).show()
+
+##################################################################################################################################
+# 48 - Adicionar Índice a uma Tabela
+##################################################################################################################################
+#SQL
+CREATE INDEX idx_coluna1 ON tabela (coluna1);
+
+# PySpark
+from pyspark.sql.functions import monotonically_increasing_id
+
+df_com_indice = df.withColumn("indice", monotonically_increasing_id())
+df_com_indice.show()
+
+##################################################################################################################################
+# 49 - Agrupamento com ROLLUP
+##################################################################################################################################
+#SQL
+SELECT coluna1, coluna2, SUM(coluna3)
+FROM tabela
+GROUP BY ROLLUP (coluna1, coluna2);
+
+# PySpark
+from pyspark.sql.functions import sum
+
+df.groupBy("coluna1", "coluna2").agg(sum("coluna3")).rollup("coluna1", "coluna2").sum().show()
+
+##################################################################################################################################
+# 50 - Pivotar Tabelas (Pivot Table)
+##################################################################################################################################
+#SQL
+SELECT coluna1, 
+       SUM(CASE WHEN coluna2 = 'valor1' THEN coluna3 ELSE 0 END) AS valor1,
+       SUM(CASE WHEN coluna2 = 'valor2' THEN coluna3 ELSE 0 END) AS valor2
+FROM tabela
+GROUP BY coluna1;
+
+# PySpark
+df.groupBy("coluna1").pivot("coluna2").sum("coluna3").show()
